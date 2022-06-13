@@ -133,6 +133,6 @@ jobs:
         dotnet nuget push '*.nupkg'
         --api-key $env:PSGALLERY_TOKEN
         --source 'https://www.powershellgallery.com/api/v2/package'
-        --no-symbols true
+        --no-symbols
       env:
         PSGALLERY_TOKEN: ${{ secrets.PSGALLERY_TOKEN }}
