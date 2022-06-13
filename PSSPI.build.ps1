@@ -81,6 +81,31 @@ task CopyToRelease {
     }
 }
 
+task Sign {
+    $certPath = $env:PSMODULE_SIGNING_CERT
+    $certPassword = $env:PSMODULE_SIGNING_CERT_PASSWORD
+    if (-not $certPath -or -not $certPassword) {
+        return
+    }
+
+    [byte[]]$certBytes = [System.Convert]::FromBase64String($env:PSMODULE_SIGNING_CERT)
+    $cert = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($certBytes, $certPassword)
+    $signParams = @{
+        Certificate     = $cert
+        TimestampServer = 'http://timestamp.digicert.com'
+        HashAlgorithm   = 'SHA256'
+    }
+
+    Get-ChildItem -LiteralPath $ReleasePath -Recurse -ErrorAction SilentlyContinue |
+        Where-Object Extension -in ".ps1", ".psm1", ".psd1", ".ps1xml", ".dll" |
+        ForEach-Object -Process {
+            $result = Set-AuthenticodeSignature -LiteralPath $_.FullName @signParams
+            if ($result.Status -ne "Valid") {
+                throw "Failed to sign $($_.FullName) - Status: $($result.Status) Message: $($result.StatusMessage)"
+            }
+        }
+}
+
 task Package {
     $nupkgPath = [IO.Path]::Combine($BuildPath, "$ModuleName.$Version*.nupkg")
     if (Test-Path $nupkgPath) {
@@ -117,50 +142,6 @@ task Analyze {
     if ($null -ne $results) {
         $results | Out-String
         throw "Failed PsScriptAnalyzer tests, build failed"
-    }
-}
-
-task DoUnitTest {
-    $resultsPath = [IO.Path]::Combine($BuildPath, 'TestResults')
-    if (-not (Test-Path -LiteralPath $resultsPath)) {
-        New-Item $resultsPath -ItemType Directory -ErrorAction Stop | Out-Null
-    }
-
-    # dotnet test places the results in a subfolder of the results-directory. This subfolder is based on a random guid
-    # so a temp folder is used to ensure we only get the current runs results
-    $tempResultsPath = [IO.Path]::Combine($resultsPath, "TempUnit")
-    if (Test-Path -LiteralPath $tempResultsPath) {
-        Remove-Item -LiteralPath $tempResultsPath -Force -Recurse
-    }
-    New-Item -Path $tempResultsPath -ItemType Directory | Out-Null
-
-    try {
-        $runSettingsPrefix = 'DataCollectionRunSettings.DataCollectors.DataCollector.Configuration'
-        $arguments = @(
-            'test'
-            '"{0}"' -f ([IO.Path]::Combine($PSScriptRoot, 'tests', 'units'))
-            '--results-directory', $tempResultsPath
-            if ($Configuration -eq 'Debug') {
-                '--collect:"XPlat Code Coverage"'
-                '--'
-                "$runSettingsPrefix.Format=json"
-                "$runSettingsPrefix.IncludeDirectory=`"$CSharpPath`""
-            }
-        )
-
-        Write-Host "Running unit tests"
-        dotnet @arguments
-
-        if ($LASTEXITCODE) {
-            throw "Unit tests failed"
-        }
-
-        if ($Configuration -eq 'Debug') {
-            Move-Item -Path $tempResultsPath/*/*.json -Destination $resultsPath/UnitCoverage.json -Force
-        }
-    }
-    finally {
-        Remove-Item -LiteralPath $tempResultsPath -Force -Recurse
     }
 }
 
@@ -211,9 +192,9 @@ task DoTest {
     }
 }
 
-task Build -Jobs Clean, BuildManaged, CopyToRelease, BuildDocs, Package
+task Build -Jobs Clean, BuildManaged, CopyToRelease, BuildDocs, Sign, Package
 
 # FIXME: Work out why we need the obj and bin folder for coverage to work
-task Test -Jobs BuildManaged, Analyze, DoUnitTest, DoTest
+task Test -Jobs BuildManaged, Analyze, DoTest
 
 task . Build
