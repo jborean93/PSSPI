@@ -19,8 +19,10 @@ internal interface ICredentialIdentity
 public class WinNTAuthIdentity : ICredentialIdentity
 {
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-    private struct SEC_WINNT_AUTH_IDENTITY_W
+    private struct SEC_WINNT_AUTH_IDENTITY_EXW
     {
+        public UInt32 Version;
+        public UInt32 Length;
         public unsafe char* User;
         public UInt32 UserLength;
         public unsafe char* Domain;
@@ -28,6 +30,8 @@ public class WinNTAuthIdentity : ICredentialIdentity
         public unsafe void* Password;
         public UInt32 PasswordLength;
         public WinNTAuthIdentityFlags Flags;
+        public unsafe char* PackageList;
+        public UInt32 PackageListLength;
     }
 
     /// <summary>The username of the identity.</summary>
@@ -39,11 +43,15 @@ public class WinNTAuthIdentity : ICredentialIdentity
     /// <summary>The password of the identity.</summary>
     public SecureString? Password { get; }
 
-    public WinNTAuthIdentity(string? username, string? domain, SecureString? password)
+    /// <summary>List of auth packages separated by commas the credential can use.</summary>
+    public string? PackageList { get; }
+
+    public WinNTAuthIdentity(string? username, string? domain, SecureString? password, string? packageList)
     {
         Username = username;
         Domain = domain;
         Password = password;
+        PackageList = packageList;
     }
 
     int ICredentialIdentity.AcquireCredentialsHandle(string? principal, string package, CredentialUse usage,
@@ -59,17 +67,21 @@ public class WinNTAuthIdentity : ICredentialIdentity
 
             unsafe
             {
-                fixed (char* userPtr = Username, domainPtr = Domain)
+                fixed (char* userPtr = Username, domainPtr = Domain, packageListPtr = PackageList)
                 {
-                    SEC_WINNT_AUTH_IDENTITY_W authData = new()
+                    SEC_WINNT_AUTH_IDENTITY_EXW authData = new()
                     {
+                        Version = 0x200,  // SEC_WINNT_AUTH_IDENTITY_VERSION
+                        Length = (uint)Marshal.SizeOf<SEC_WINNT_AUTH_IDENTITY_EXW>(),
                         User = userPtr,
-                        UserLength = (UInt16)(Username?.Length ?? 0),
+                        UserLength = (uint)(Username?.Length ?? 0),
                         Domain = domainPtr,
-                        DomainLength = (UInt16)(Domain?.Length ?? 0),
+                        DomainLength = (uint)(Domain?.Length ?? 0),
                         Password = passwordPtr.ToPointer(),
-                        PasswordLength = (UInt16)(Password?.Length ?? 0),
+                        PasswordLength = (uint)(Password?.Length ?? 0),
                         Flags = WinNTAuthIdentityFlags.SEC_WINNT_AUTH_IDENTITY_UNICODE,
+                        PackageList = packageListPtr,
+                        PackageListLength = (uint)(PackageList?.Length ?? 0),
                     };
 
                     return SSPI.AcquireCredentialsHandleW(
@@ -95,8 +107,19 @@ public class WinNTAuthIdentity : ICredentialIdentity
     }
 }
 
+[Flags]
 internal enum WinNTAuthIdentityFlags : uint
 {
-    SEC_WINNT_AUTH_IDENTITY_ANSI = 1,
-    SEC_WINNT_AUTH_IDENTITY_UNICODE = 2,
+    NONE = 0x00000000,
+    SEC_WINNT_AUTH_IDENTITY_ANSI = 0x00000001,
+    SEC_WINNT_AUTH_IDENTITY_UNICODE = 0x00000002,
+    SEC_WINNT_AUTH_IDENTITY_MARSHALLED = 0x00000004,
+    SEC_WINNT_AUTH_IDENTITY_ONLY = 0x00000008,
+    SEC_WINNT_AUTH_IDENTITY_FLAGS_PROCESS_ENCRYPTED = 0x00000010,
+    SEC_WINNT_AUTH_IDENTITY_FLAGS_SYSTEM_PROTECTED = 0x00000020,
+    SEC_WINNT_AUTH_IDENTITY_FLAGS_USER_PROTECTED = 0x00000040,
+    SEC_WINNT_AUTH_IDENTITY_FLAGS_RESERVED = 0x00010000,
+    SEC_WINNT_AUTH_IDENTITY_FLAGS_NULL_USER = 0x00020000,
+    SEC_WINNT_AUTH_IDENTITY_FLAGS_NULL_DOMAIN = 0x00040000,
+    SEC_WINNT_AUTH_IDENTITY_FLAGS_ID_PROVIDER = 0x00080000,
 }

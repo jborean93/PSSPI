@@ -14,7 +14,8 @@ Get a SSPI credential handle.
 
 ```
 Get-SSPICredential -Package <PackageOrString> [-Principal <String>] [-CredentialUse <CredentialUse>]
- [-Credential <PSCredential>] [<CommonParameters>]
+ [-Credential <PSCredential>] [-AllowPackage <PackageOrString[]>] [-RejectPackage <PackageOrString[]>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -25,7 +26,7 @@ Currently a credential can be for the current user context or for an explicit cr
 
 ### Example 1: Get the Negotiate credentials for the current user
 ```powershell
-PS C:\> Get-SSPICredential -Name Negotiate
+PS C:\> Get-SSPICredential -Package Negotiate
 ```
 
 Gets the SSPI credential for the current user for the `Negotiate` package.
@@ -33,12 +34,36 @@ Gets the SSPI credential for the current user for the `Negotiate` package.
 ### Example 2: Get the Kerberos credential with an explicit user
 ```powershell
 PS C:\> $cred = Get-Credential
-PS C:\> Get-SSPICredential -Name Kerberos -Credential $cred
+PS C:\> Get-SSPICredential -Package Kerberos -Credential $cred
 ```
 
 Gets the SSPI credential with explicit credentials for the `Kerberos` package.
 
+### Example 3: Create Negotiate credential but disable NTLM
+```powershell
+PS C:\> Get-SSPICredential -Package Negotiate -RejectPackage NTLM
+```
+
+Gets the SSPI credential for the current user for the `Negotiate` package but disables use of NTLM.
+This means that `Negotiate` will attempt to use `Kerberos` or `NegoEx` but will not attempt to use `NTLM` as a fallback.
+
 ## PARAMETERS
+
+### -AllowPackage
+Specify security packages that can be used on a `Negotiate` credential.
+This is used to only allow the list of packages in a `Negotiate` context rather than the defaults used by SSPI.
+
+```yaml
+Type: PackageOrString[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
 
 ### -Credential
 Use the username/password of the credentials specified instead of the current user context.
@@ -95,6 +120,23 @@ The principal to use with the credential, the purpose of this value depends on t
 
 ```yaml
 Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -RejectPackage
+Specify security packages that cannot be used on a `Negotiate` credential.
+This is used to exclude a list of packages in a `Negotiate` context rather than the defaults used by SSPI.
+For example specify `-RejectPackage NTLM` when creating a `Negotiate` credential to disable NTLM negotiation.
+
+```yaml
+Type: PackageOrString[]
 Parameter Sets: (All)
 Aliases:
 

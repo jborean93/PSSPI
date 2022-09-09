@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Management.Automation;
 
 namespace PSSPI.Commands;
@@ -26,8 +28,29 @@ public class GetSSPICredential : PSCmdlet
     [ValidateNotNull()]
     public PSCredential Credential { get; set; } = PSCredential.Empty;
 
+    [Parameter()]
+    [ValidateNotNull()]
+    [ArgumentCompleter(typeof(PackageCompletor))]
+    public PackageOrString[] AllowPackage { get; set; } = Array.Empty<PackageOrString>();
+
+    [Parameter()]
+    [ValidateNotNull()]
+    [ArgumentCompleter(typeof(PackageCompletor))]
+    public PackageOrString[] RejectPackage { get; set; } = Array.Empty<PackageOrString>();
+
     protected override void EndProcessing()
     {
+        List<string> packageList = new();
+        foreach (PackageOrString allowedPackage in AllowPackage)
+        {
+            packageList.Add(allowedPackage.Name);
+        }
+        foreach (PackageOrString rejectedPackage in RejectPackage)
+        {
+            packageList.Add($"!{rejectedPackage.Name}");
+        }
+        string? packageListString = packageList.Count == 0 ? null : string.Join(',', packageList);
+
         ICredentialIdentity? authData = null;
         if (Credential != PSCredential.Empty)
         {
@@ -39,7 +62,11 @@ public class GetSSPICredential : PSCmdlet
                 domain = userSplit[0];
                 username = userSplit[1];
             }
-            authData = new WinNTAuthIdentity(username, domain, Credential.Password);
+            authData = new WinNTAuthIdentity(username, domain, Credential.Password, packageListString);
+        }
+        else
+        {
+            authData = new WinNTAuthIdentity(null, null, null, packageListString);
         }
 
         try
