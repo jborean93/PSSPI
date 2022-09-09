@@ -1,6 +1,6 @@
 # Changelog for PSSPI
 
-## v0.2.0 - TBD
+## v0.2.0 - 2022-09-09
 
 + Added `AllowPackage` and `RejectPackage` for `New-SSPICredential` to specify what package a `Negotiate` credential can utilise
 
