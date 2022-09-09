@@ -26,7 +26,7 @@ Currently a credential can be for the current user context or for an explicit cr
 
 ### Example 1: Get the Negotiate credentials for the current user
 ```powershell
-PS C:\> Get-SSPICredential -Name Negotiate
+PS C:\> Get-SSPICredential -Package Negotiate
 ```
 
 Gets the SSPI credential for the current user for the `Negotiate` package.
@@ -34,10 +34,18 @@ Gets the SSPI credential for the current user for the `Negotiate` package.
 ### Example 2: Get the Kerberos credential with an explicit user
 ```powershell
 PS C:\> $cred = Get-Credential
-PS C:\> Get-SSPICredential -Name Kerberos -Credential $cred
+PS C:\> Get-SSPICredential -Package Kerberos -Credential $cred
 ```
 
 Gets the SSPI credential with explicit credentials for the `Kerberos` package.
+
+### Example 3: Create Negotiate credential but disable NTLM
+```powershell
+PS C:\> Get-SSPICredential -Package Negotiate -RejectPackage NTLM
+```
+
+Gets the SSPI credential for the current user for the `Negotiate` package but disables use of NTLM.
+This means that `Negotiate` will attempt to use `Kerberos` or `NegoEx` but will not attempt to use `NTLM` as a fallback.
 
 ## PARAMETERS
 
