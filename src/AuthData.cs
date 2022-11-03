@@ -21,6 +21,8 @@ public class WinNTAuthIdentity : ICredentialIdentity
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
     private struct SEC_WINNT_AUTH_IDENTITY_EXW
     {
+        public const int SEC_WINNT_AUTH_IDENTITY_VERSION = 0x200;
+
         public UInt32 Version;
         public UInt32 Length;
         public unsafe char* User;
@@ -71,7 +73,7 @@ public class WinNTAuthIdentity : ICredentialIdentity
                 {
                     SEC_WINNT_AUTH_IDENTITY_EXW authData = new()
                     {
-                        Version = 0x200,  // SEC_WINNT_AUTH_IDENTITY_VERSION
+                        Version = SEC_WINNT_AUTH_IDENTITY_EXW.SEC_WINNT_AUTH_IDENTITY_VERSION,
                         Length = (uint)Marshal.SizeOf<SEC_WINNT_AUTH_IDENTITY_EXW>(),
                         User = userPtr,
                         UserLength = (uint)(Username?.Length ?? 0),

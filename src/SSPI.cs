@@ -62,6 +62,28 @@ internal static class Helpers
         public UInt16 ClientTlsCredLength;
     }
 
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    public struct SecPkgContext_CipherInfo
+    {
+        private const int SZ_ALG_MAX_SIZE = 64;
+
+        public int dwVersion;
+        public int dwProtocol;
+        public int dwCipherSuite;
+        public int dwBaseCipherSuite;
+        public unsafe fixed char szCipherSuite[SZ_ALG_MAX_SIZE];
+        public unsafe fixed char szCipher[SZ_ALG_MAX_SIZE];
+        public int dwCipherLen;
+        public int dwCipherBlockLen;
+        public unsafe fixed char szHash[SZ_ALG_MAX_SIZE];
+        public int dwHashLen;
+        public unsafe fixed char szExchange[SZ_ALG_MAX_SIZE];
+        public int dwMinExchangeLen;
+        public int dwMaxExchangeLen;
+        public unsafe fixed char szCertificate[SZ_ALG_MAX_SIZE];
+        public int dwKeyType;
+    }
+
     [StructLayout(LayoutKind.Sequential)]
     public struct SecPkgContext_Sizes
     {
@@ -168,10 +190,10 @@ internal static class SSPI
         UInt32 cbBuffer);
 
     [DllImport("Secur32.dll", EntryPoint = "QueryContextAttributes")]
-    private static extern Int32 QueryContextAttributesNative(
+    private unsafe static extern Int32 QueryContextAttributesNative(
         SafeSspiContextHandle phContext,
         SecPkgAttribute ulAttribute,
-        IntPtr pBuffer);
+        void* pBuffer);
 
     [DllImport("Secur32.dll", CharSet = CharSet.Unicode)]
     private static extern Int32 QuerySecurityPackageInfoW(
@@ -371,7 +393,7 @@ internal static class SSPI
         {
             unsafe
             {
-                ReadOnlySpan<Helpers.SecPkgInfoW> packages = new (info.ToPointer(), (int)count);
+                ReadOnlySpan<Helpers.SecPkgInfoW> packages = new(info.ToPointer(), (int)count);
                 return packages.ToArray().Select((p) => new SecPackageInfo(p)).ToArray();
             }
         }
@@ -486,7 +508,7 @@ internal static class SSPI
     /// <param name="buffer">The buffer that will store the queried value.</param>
     /// <exception cref="SspiException">Failure trying to query the requested value.</exception>
     /// <see href="https://docs.microsoft.com/en-us/windows/win32/secauthn/querycontextattributes--general">QueryContextAttributes</see>
-    public static void QueryContextAttributes(SafeSspiContextHandle context, SecPkgAttribute attribute, IntPtr buffer)
+    public unsafe static void QueryContextAttributes(SafeSspiContextHandle context, SecPkgAttribute attribute, void* buffer)
     {
         int res = QueryContextAttributesNative(context, attribute, buffer);
         if (res != 0)
@@ -911,6 +933,44 @@ public enum SecPkgAttribute : uint
     SECPKG_ATTR_APPLICATION_PROTOCOL = 35,
     SECPKG_ATTR_NEGOTIATED_TLS_EXTENSIONS = 36,
     SECPKG_ATTR_IS_LOOPBACK = 37,
+    SECPKG_ATTR_ISSUER_LIST = 0x50,
+    SECPKG_ATTR_REMOTE_CRED = 0x51,
+    SECPKG_ATTR_LOCAL_CRED = 0x52,
+    SECPKG_ATTR_REMOTE_CERT_CONTEXT = 0x53,
+    SECPKG_ATTR_LOCAL_CERT_CONTEXT = 0x54,
+    SECPKG_ATTR_ROOT_STORE = 0x55,
+    SECPKG_ATTR_SUPPORTED_ALGS = 0x56,
+    SECPKG_ATTR_CIPHER_STRENGTHS = 0x57,
+    SECPKG_ATTR_SUPPORTED_PROTOCOLS = 0x58,
+    SECPKG_ATTR_ISSUER_LIST_EX = 0x59,
+    SECPKG_ATTR_CONNECTION_INFO = 0x5a,
+    SECPKG_ATTR_EAP_KEY_BLOCK = 0x5b,
+    SECPKG_ATTR_MAPPED_CRED_ATTR = 0x5c,
+    SECPKG_ATTR_SESSION_INFO = 0x5d,
+    SECPKG_ATTR_APP_DATA = 0x5e,
+    SECPKG_ATTR_REMOTE_CERTIFICATES = 0x5F,
+    SECPKG_ATTR_CLIENT_CERT_POLICY = 0x60,
+    SECPKG_ATTR_CC_POLICY_RESULT = 0x61,
+    SECPKG_ATTR_USE_NCRYPT = 0x62,
+    SECPKG_ATTR_LOCAL_CERT_INFO = 0x63,
+    SECPKG_ATTR_CIPHER_INFO = 0x64,
+    SECPKG_ATTR_EAP_PRF_INFO = 0x65,
+    SECPKG_ATTR_SUPPORTED_SIGNATURES = 0x66,
+    SECPKG_ATTR_REMOTE_CERT_CHAIN = 0x67,
+    SECPKG_ATTR_UI_INFO = 0x68,
+    SECPKG_ATTR_EARLY_START = 0x69,
+    SECPKG_ATTR_KEYING_MATERIAL_INFO = 0x6a,
+    SECPKG_ATTR_KEYING_MATERIAL = 0x6b,
+    SECPKG_ATTR_SRTP_PARAMETERS = 0x6c,
+    SECPKG_ATTR_TOKEN_BINDING = 0x6d,
+    SECPKG_ATTR_CONNECTION_INFO_EX = 0x6e,
+    SECPKG_ATTR_KEYING_MATERIAL_TOKEN_BINDING = 0x6f,
+    SECPKG_ATTR_KEYING_MATERIAL_INPROC = 0x70,
+    SECPKG_ATTR_CERT_CHECK_RESULT = 0x71,
+    SECPKG_ATTR_CERT_CHECK_RESULT_INPROC = 0x72,
+    SECPKG_ATTR_SESSION_TICKET_KEYS = 0x73,
+    SECPKG_ATTR_SERIALIZED_REMOTE_CERT_CONTEXT_INPROC = 0x74,
+    SECPKG_ATTR_SERIALIZED_REMOTE_CERT_CONTEXT = 0x75,
 }
 
 public enum TargetDataRep : uint
