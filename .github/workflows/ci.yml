@@ -55,13 +55,13 @@ jobs:
       fail-fast: false
       matrix:
         info:
-        - name: PS 7.0 x64
+        - name: PS_7.0_x64
           psversion: '7.0.13'
           os: windows-latest
-        - name: PS 7.2 x64
+        - name: PS_7.2_x64
           psversion: '7.2.7'
           os: windows-latest
-        - name: PS 7.3 x64
+        - name: PS_7.3_x64
           psversion: '7.3.0'
           os: windows-latest
 
