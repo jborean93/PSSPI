@@ -1,6 +1,6 @@
 # Changelog for PSSPI
 
-## v0.3.1 - TBD
+## v0.3.1 - 2022-11-14
 
 + Fix up memory access violation that occurs when the garbage collector tries to cleanup credential and security context handles that failed to be acquired
 

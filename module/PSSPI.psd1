@@ -32,7 +32,7 @@
     Copyright              = '(c) 2022 Jordan Borean. All rights reserved.'
 
     # Description of the functionality provided by this module
-    Description            = "Module for interacting with SSIS on Windows.`nSee https://github.com/jborean93/PSSPI for more info"
+    Description            = "Module for interacting with SSPI on Windows.`nSee https://github.com/jborean93/PSSPI for more info"
 
     # Minimum version of the PowerShell engine required by this module
     PowerShellVersion      = '7.0'
@@ -102,7 +102,7 @@
             # Tags applied to this module. These help with module discovery in online galleries.
             Tags         = @(
                 'Windows'
-                'SSIS'
+                'SSPI'
                 'Authentication'
                 'PSEdition_Core'
             )
