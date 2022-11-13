@@ -5,7 +5,7 @@
 [![PowerShell Gallery](https://img.shields.io/powershellgallery/dt/PSSPI.svg)](https://www.powershellgallery.com/packages/PSSPI)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/jborean93/PSSPI/blob/main/LICENSE)
 
-See [about_PSSPI](docs/en-US/about_PSSPI.md) for more details.
+See [about_PSSPI](docs/en-US/PSSPI.md) for more details.
 
 ## Documentation
 

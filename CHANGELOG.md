@@ -1,6 +1,6 @@
 # Changelog for PSSPI
 
-## v0.3.0 - TBD
+## v0.3.0 - 2022-11-13
 
 + Added the following cmdlets for Schannel security contexts
   + `Get-SchannelCredential` - Get a Schannel SSPI cipher using the legacy Schannel credential struct
