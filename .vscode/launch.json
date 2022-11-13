@@ -24,14 +24,8 @@
             "type": "PowerShell",
             "request": "launch",
             "script": "${file}",
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "name": ".NET FullCLR Attach",
-            "type": "clr",
-            "request": "attach",
-            "processId": "${command:pickProcess}",
-            "justMyCode": true,
+            "cwd": "${workspaceFolder}",
+            "createTemporaryIntegratedConsole": true
         },
         {
             "name": ".NET CoreCLR Attach",

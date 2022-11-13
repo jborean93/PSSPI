@@ -63,7 +63,10 @@ public class SecurityBuffer : ISecBuffer
     internal SecurityBuffer(Helpers.SecBuffer buffer)
     {
         Data = new byte[buffer.cbBuffer];
-        Marshal.Copy(buffer.pvBuffer, Data, 0, Data.Length);
+        if (buffer.pvBuffer != IntPtr.Zero)
+        {
+            Marshal.Copy(buffer.pvBuffer, Data, 0, Data.Length);
+        }
         Type = (SecBufferType)(buffer.BufferType & ~0xF0000000);
         Flags = (SecBufferFlags)(buffer.BufferType & 0xF0000000);
     }
