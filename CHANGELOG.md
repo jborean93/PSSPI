@@ -1,5 +1,9 @@
 # Changelog for PSSPI
 
+## v0.3.1 - TBD
+
++ Fix up memory access violation that occurs when the garbage collector tries to cleanup credential and security context handles that failed to be acquired
+
 ## v0.3.0 - 2022-11-13
 
 + Added the following cmdlets for Schannel security contexts

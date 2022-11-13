@@ -64,7 +64,7 @@ public class GetSSPICredential : PSCmdlet
             }
             authData = new WinNTAuthIdentity(username, domain, Credential.Password, packageListString);
         }
-        else
+        else if (!string.IsNullOrWhiteSpace(packageListString))
         {
             authData = new WinNTAuthIdentity(null, null, null, packageListString);
         }
