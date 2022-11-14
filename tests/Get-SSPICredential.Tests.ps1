@@ -4,37 +4,42 @@ Describe "Get-SSPICredential" {
     It "Gets outbound credential with default context" {
         $cred = Get-SSPICredential -Package Negotiate
         $cred | Should -BeOfType ([PSSPI.Credential])
+        $cred.Expiry | Should -BeGreaterThan 0
         $cred.SafeHandle | Should -BeNullOrEmpty -Not
     }
 
     It "Gets inbound credential with default context" {
         $cred = Get-SSPICredential -Package Negotiate -CredentialUse SECPKG_CRED_INBOUND
         $cred | Should -BeOfType ([PSSPI.Credential])
+        $cred.Expiry | Should -BeGreaterThan 0
         $cred.SafeHandle | Should -BeNullOrEmpty -Not
     }
 
     It "Gets credential with package type" {
-        $package = Get-SSPIPackage -Name NTLM
+        $package = Get-SSPIPackage -name NTLM
         $cred = Get-SSPICredential -Package $package
         $cred | Should -BeOfType ([PSSPI.Credential])
+        $cred.Expiry | Should -BeGreaterThan 0
         $cred.SafeHandle | Should -BeNullOrEmpty -Not
     }
 
     It "Gets credential with explicit credentials - <UserName>" -TestCases @(
-        @{UserName = 'username'},
-        @{UserName = 'DOMAIN\username'},
-        @{UserName = 'username@DOMAIN.COM'}
+        @{UserName = 'username' },
+        @{UserName = 'DOMAIN\username' },
+        @{UserName = 'username@DOMAIN.COM' }
     ) {
         param ($UserName)
         $psCred = [PSCredential]::new($UserName, (ConvertTo-SecureString -AsPlainText -Force -String 'Password123!'))
         $cred = Get-SSPICredential -Package Negotiate -Credential $psCred
         $cred | Should -BeOfType ([PSSPI.Credential])
+        $cred.Expiry | Should -BeGreaterThan 0
         $cred.SafeHandle | Should -BeNullOrEmpty -Not
     }
 
     It "Gets credential with principal" {
         $cred = Get-SSPICredential -Package NTLM -Principal test
         $cred | Should -BeOfType ([PSSPI.Credential])
+        $cred.Expiry | Should -BeGreaterThan 0
         $cred.SafeHandle | Should -BeNullOrEmpty -Not
     }
 

@@ -108,9 +108,16 @@ Describe "Schannel SCHANNEL_CRED" {
     }
 
     It "Doesn't provide cert with inbound credential" {
-        $out = Get-SCHCredential -CredentialUse SECPKG_CRED_INBOUND -ErrorAction SilentlyContinue -ErrorVariable err
+        $out = Get-SchannelCredential -CredentialUse SECPKG_CRED_INBOUND -ErrorAction SilentlyContinue -ErrorVariable err
         $out | Should -BeNullOrEmpty
         $err.Count | Should -Be 1
         [string]$err[0] | Should -BeLike "*At least one certificate must be specified when using SECPKG_CRED_INBOUND*"
+    }
+
+    It "Fails to get credential for protocol not available" {
+        $out = Get-SchannelCredential -Protocols SP_PROT_SSL3 -ErrorAction SilentlyContinue -ErrorVariable err
+        $out | Should -BeNullOrEmpty
+        $err.Count | Should -Be 1
+        [string]$err[0] | Should -BeLike "*AcquireCredentialsHandle failed*"
     }
 }

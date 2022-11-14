@@ -103,4 +103,12 @@ Describe "Schannel SCH_CREDENTIALS" {
         $err.Count | Should -Be 1
         [string]$err[0] | Should -BeLike "*Schannel credential can not have more than 16 TLS Parameters*"
     }
+
+    It "Fails to get credential for protocol not available" {
+        $params = New-TlsParameter -DisabledProtocol (-bnot ([PSSPI.SchannelProtocols]::SP_PROT_SSL3))
+        $out = Get-SCHCredential -TlsParameter $params -ErrorAction SilentlyContinue -ErrorVariable err
+        $out | Should -BeNullOrEmpty
+        $err.Count | Should -Be 1
+        [string]$err[0] | Should -BeLike "*AcquireCredentialsHandle failed*"
+    }
 }

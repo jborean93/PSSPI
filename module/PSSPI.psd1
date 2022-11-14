@@ -14,7 +14,7 @@
     RootModule             = 'bin/netcoreapp3.1/PSSPI.dll'
 
     # Version number of this module.
-    ModuleVersion          = '0.3.0'
+    ModuleVersion          = '0.3.1'
 
     # Supported PSEditions
     # CompatiblePSEditions = @()
