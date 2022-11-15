@@ -1,5 +1,10 @@
 # Changelog for PSSPI
 
+## v0.4.0 - TBD
+
++ Added the following cmdlets
+  + `Get-SecContextRemoteCert` - Gets the certificate presented by the peer in a Schannel exchange
+
 ## v0.3.1 - 2022-11-14
 
 + Fix up memory access violation that occurs when the garbage collector tries to cleanup credential and security context handles that failed to be acquired

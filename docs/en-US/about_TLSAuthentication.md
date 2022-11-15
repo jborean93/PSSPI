@@ -28,8 +28,15 @@ The `SCH_USE_STRONG_CRYPTO` can, and should, be specified so that Schannel restr
 The `Get-SCHCredential` cmdlet should be used for Schannel authentication attempts on any host that runs with Windows 10 Build 1809 or newer.
 The `Get-SchannelCredential` is only available for older hosts and support for it is limited.
 
-# AUTHENTICATION EXAMPLE
+# CLIENT AUTHENTICATION
+TLS supports client authentication where the server requests the client to send an X.509 certificate to the server.
+The server can then inspect this certificate and work through any authorisation rules it needs to do.
+For the server to request the client to send a certificate it must be stepped through with the `ASC_REQ_MUTUAL_AUTH` ContextReq flag.
 
+Once the handshake is complete, it can retrieve the certificate send by the client by calling `Get-SecContextRemoteCert -Context $serverContext`.
+It is up to the server to then inspect the certificate and authorised the client identity.
+
+# AUTHENTICATION EXAMPLE
 The authentication phase is known as the TLS handshake and requires multiple calls to the SSPI API to complete.
 The exchange is quite complex but hopefully this example helps to illustrate what is needed.
 
