@@ -14,7 +14,7 @@
     RootModule             = 'bin/netcoreapp3.1/PSSPI.dll'
 
     # Version number of this module.
-    ModuleVersion          = '0.3.1'
+    ModuleVersion          = '0.4.0'
 
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -74,6 +74,7 @@
         'Get-SchannelCredential'
         'Get-SCHCredential'
         'Get-SecContextCipherInfo'
+        'Get-SecContextRemoteCert'
         'Get-SSPICredential'
         'Get-SSPIPackage'
         'New-ChannelBindingBuffer'

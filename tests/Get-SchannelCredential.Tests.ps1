@@ -19,6 +19,16 @@ Describe "Schannel SCHANNEL_CRED" {
         finally {
             $rootStore.Dispose()
         }
+
+        $clientCertParams = @{
+            Subject      = 'CN=test-user'
+            KeyUsage     = 'DigitalSignature', 'KeyEncipherment'
+            KeyAlgorithm = 'RSA'
+            KeyLength    = 2048
+            Type         = 'Custom'
+        }
+        $ClientCert = New-SelfSignedCertificate @clientCertParams
+        Remove-Item -LiteralPath "Cert:\LocalMachine\My\$($ClientCert.Thumbprint)" -Force -Confirm:$false
     }
     AfterAll {
         Remove-Item -LiteralPath "Cert:\LocalMachine\Root\$($ServerCert.Thumbprint)" -Force -Confirm:$false
@@ -42,6 +52,15 @@ Describe "Schannel SCHANNEL_CRED" {
         $sActual.CipherSuite | Should -Be TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         $sActual.Cipher | Should -Be AES
         $sActual.CipherLength | Should -Be 256
+
+        $serverCertActual = Get-SecContextRemoteCert -Context $cCtx
+        $serverCertActual.Thumbprint | Should -Be $ServerCert.Thumbprint
+
+        # Expected to be $null
+        $out = Get-SecContextRemoteCert -Context $sCtx -ErrorAction SilentlyContinue -ErrorVariable err
+        $out | Should -BeNullOrEmpty
+        $err.Count | Should -Be 1
+        [string]$err[0] | Should -BeLike "*QueryContextAttributes failed (No credentials are available in the security package*"
     }
 
     It "Authenticates with explicit protocol" {
@@ -105,6 +124,33 @@ Describe "Schannel SCHANNEL_CRED" {
         $sActual.CipherSuite | Should -Be TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
         $sActual.Cipher | Should -Be AES
         $sActual.CipherLength | Should -Be 128
+    }
+
+    It "Authenticates with client auth" {
+        $cCred = Get-SchannelCredential -Certificate $ClientCert
+        $sCred = Get-SchannelCredential -CredentialUse SECPKG_CRED_INBOUND -Certificate $ServerCert
+
+        $cCtx, $sCtx = Complete-TlsAuth -Client $cCred -Server $sCred -Target $Target -ClientAuth
+        $cActual = Get-SecContextCipherInfo -Context $cCtx
+        $sActual = Get-SecContextCipherInfo -Context $sCtx
+
+        $cActual | Should -BeOfType ([PSSPI.Commands.CipherInfo])
+        $cActual.Protocol | Should -Be ([PSSPI.Commands.TlsProtocol]::TLS1_2)
+        $cActual.CipherSuite | Should -Be TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        $cActual.Cipher | Should -Be AES
+        $cActual.CipherLength | Should -Be 256
+
+        $sActual | Should -BeOfType ([PSSPI.Commands.CipherInfo])
+        $sActual.Protocol | Should -Be ([PSSPI.Commands.TlsProtocol]::TLS1_2)
+        $sActual.CipherSuite | Should -Be TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        $sActual.Cipher | Should -Be AES
+        $sActual.CipherLength | Should -Be 256
+
+        $serverCertActual = Get-SecContextRemoteCert -Context $cCtx
+        $serverCertActual.Thumbprint | Should -Be $ServerCert.Thumbprint
+
+        $clientCertActual = Get-SecContextRemoteCert -Context $sCtx
+        $clientCertActual.Thumbprint | Should -Be $ClientCert.Thumbprint
     }
 
     It "Doesn't provide cert with inbound credential" {

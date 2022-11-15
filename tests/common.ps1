@@ -33,11 +33,19 @@ Function Global:Complete-TlsAuth {
         [PSSPI.Credential]$Server,
 
         [Parameter(Mandatory)]
-        [string]$Target
+        [string]$Target,
+
+        [Parameter()]
+        [switch]$ClientAuth
     )
 
     $cCtx = New-SecContext -Credential $Client
     $sCtx = New-SecContext -Credential $Server
+
+    $ascReq = [PSSPI.AcceptorContextRequestFlags]::ASC_REQ_ALLOCATE_MEMORY
+    if ($ClientAuth) {
+        $ascReq = $ascReq -bor [PSSPI.AcceptorContextRequestFlags]::ASC_REQ_MUTUAL_AUTH
+    }
 
     $sRes = $null
     while ($true) {
@@ -69,7 +77,7 @@ Function Global:Complete-TlsAuth {
 
         $stepParams = @{
             Context      = $sCtx
-            ContextReq   = 'ASC_REQ_ALLOCATE_MEMORY'
+            ContextReq   = $ascReq
             InputBuffer  = @(
                 $cRes.Buffers[0]
                 'SECBUFFER_EMPTY'

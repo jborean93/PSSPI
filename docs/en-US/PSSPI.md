@@ -20,6 +20,9 @@ Creates an Schannel SSPI credential based on the newer SCH_CREDENTIALS structure
 ### [Get-SecContextCipherInfo](Get-SecContextCipherInfo.md)
 Get TLS cipher information from a negotiated context.
 
+### [Get-SecContextRemoteCert](Get-SecContextRemoteCert.md)
+Gets the certificate supplied by the peer.
+
 ### [Get-SSPICredential](Get-SSPICredential.md)
 Get a SSPI credential handle.
 
