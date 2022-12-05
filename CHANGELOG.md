@@ -1,6 +1,6 @@
 # Changelog for PSSPI
 
-## v0.4.0 - TBD
+## v0.4.0 - 2022-12-06
 
 + Added the following cmdlets
   + `Get-SecContextRemoteCert` - Gets the certificate presented by the peer in a Schannel exchange
