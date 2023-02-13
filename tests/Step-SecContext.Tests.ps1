@@ -36,6 +36,21 @@ Describe "Step-*SecContext" {
         $sRes2.Buffers[0].Type | Should -Be ([PSSPI.SecBufferType]::SECBUFFER_TOKEN)
         $sRes2.Buffers[0].Data | Should -Be $null
         $sRes2.Flags | Should -Be ([PSSPI.AcceptorContextReturnFlags]::NONE)
+
+        # NTLM has a fixed signature/header size of 16 and no block size
+        $cSizes = Get-SecContextSizes -Context $cCtx
+        $cSizes | Should -BeOfType ([PSSPI.Commands.ContextSizes])
+        $cSizes.MaxToken | Should -BeOfType ([System.UInt32])
+        $cSizes.MaxSignature | Should -Be 16
+        $cSizes.BlockSize | Should -Be 0
+        $cSizes.SecurityTrailer | Should -Be 16
+
+        $sSizes = Get-SecContextSizes -Context $sCtx
+        $sSizes | Should -BeOfType ([PSSPI.Commands.ContextSizes])
+        $sSizes.MaxToken | Should -BeOfType ([System.UInt32])
+        $sSizes.MaxSignature | Should -Be 16
+        $sSizes.BlockSize | Should -Be 0
+        $sSizes.SecurityTrailer | Should -Be 16
     }
 
     It "Steps through NTLM exchange with null transform buffer" {
