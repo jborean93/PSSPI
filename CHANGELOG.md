@@ -1,5 +1,10 @@
 # Changelog for PSSPI
 
+## v0.5.0 - TBD
+
++ Added the following cmdlets
+  + `Get-SecContextSizes` - Gets sizes of various context messages of a security context.
+
 ## v0.4.0 - 2022-12-06
 
 + Added the following cmdlets
